@@ -1,0 +1,3 @@
+/home/jnaylor/code/testing/basic_renderer/CMakeFiles/flatland_nerf.dir
+/home/jnaylor/code/testing/basic_renderer/CMakeFiles/edit_cache.dir
+/home/jnaylor/code/testing/basic_renderer/CMakeFiles/rebuild_cache.dir

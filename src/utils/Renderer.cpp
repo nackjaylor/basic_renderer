@@ -26,18 +26,28 @@ cv::Vec3f Renderer::colour_multiplied(const cv::Vec3f& surf_colour, const cv::Ve
 }
 
 cv::Mat Renderer::render() {
-    std::vector<Ray> rays = camera.pixels_to_ray();
+    
+    cv::Mat image;
+    render(image);
+
+    return image;
+}
+
+void Renderer::render(cv::Mat& image) {
+
     std::pair<int,int> image_dims = camera.image_dim();
+    
+    image = cv::Mat::zeros(image_dims.first,image_dims.second,CV_32FC3);
+    std::vector<Ray> rays = camera.pixels_to_ray();
     int pix_num = 0;
-    cv::Mat image = cv::Mat::zeros(image_dims.first,image_dims.second,CV_32FC3);
     for (int i = 0; i< image_dims.second; i++) {
         for (int j = 0; j < image_dims.first; j++) {
             
             Ray curr_ray = rays[pix_num];
-            int depth = 0;
+            int recur_depth = 0;
             
             cv::Vec3f& colour = image.at<cv::Vec3f>(j,i);
-            while (depth < 10) {
+            while (recur_depth < 10) {
                 
                 std::tuple<bool,SceneObject,double> intersect = curr_ray.intersection(objects);
 
@@ -66,12 +76,13 @@ cv::Mat Renderer::render() {
                     curr_ray = Ray(point_of_intersect,new_direction);
                     curr_ray.intensity = new_intensity;
 
-                    depth++;
-                } else if (!std::get<0>(intersect) && depth == 0) {
+                    recur_depth++;
+                } else if (!std::get<0>(intersect) && recur_depth == 0) {
                     colour += background_colour;
-                    depth = 10;
+                    
+                    recur_depth = 10;
                 } else {
-                    depth = 10;
+                    recur_depth = 10;
                     
                     
                 }
@@ -81,9 +92,123 @@ cv::Mat Renderer::render() {
         }
     }
 
-    return image;
+
 }
 
+void Renderer::render(cv::Mat& image, cv::Mat& depth) {
+    std::pair<int,int> image_dims = camera.image_dim();
+    
+    image = cv::Mat::zeros(image_dims.first,image_dims.second,CV_32FC3);
+    depth = cv::Mat::zeros(image_dims.first,image_dims.second,CV_32F);
+
+    std::vector<Ray> rays = camera.pixels_to_ray();
+    int pix_num = 0;
+
+    for (int i = 0; i< image_dims.second; i++) {
+        for (int j = 0; j < image_dims.first; j++) {
+            
+            Ray curr_ray = rays[pix_num];
+            int recur_depth = 0;
+            
+            cv::Vec3f& colour = image.at<cv::Vec3f>(j,i);
+            float& d_val = depth.at<float>(j,i);
+            while (recur_depth < 10) {
+                
+                std::tuple<bool,SceneObject,double> intersect = curr_ray.intersection(objects);
+
+                if (std::get<0>(intersect)) {
+                    
+                    Point point_of_intersect = curr_ray.sample(std::get<2>(intersect));
+                    SceneObject obj_of_interest = std::get<1>(intersect);
+
+                    for (Light light : lights) {
+                        if (!check_shadow(point_of_intersect,light,objects)) {
+                        
+                        colour += (colour_multiplied(obj_of_interest.colour(point_of_intersect),light.colour)*(+calculate_Lambert(point_of_intersect,light,obj_of_interest))+blinn_phong(obj_of_interest,point_of_intersect,light,curr_ray)*light.colour)*curr_ray.intensity;
+                        }
+
+                    }
+
+                    colour += ambient_strength*colour_multiplied(obj_of_interest.colour(point_of_intersect),ambient_colour)*curr_ray.intensity;
+                    
+                    if (recur_depth == 0) {
+                        d_val = (point_of_intersect-curr_ray.get_origin()).norm();
+                    }    
+                
+
+                    Vector3d normal = obj_of_interest.calc_normal(point_of_intersect);
+                    double reflect = 2*curr_ray.get_direction().dot(normal);
+                    Vector3d new_direction = curr_ray.get_direction()-reflect*normal;
+                    double new_intensity = curr_ray.intensity*obj_of_interest.reflection_factor;
+                    curr_ray = Ray(point_of_intersect,new_direction);
+                    curr_ray.intensity = new_intensity;
+
+                    
+
+
+                    recur_depth++;
+                } else if (!std::get<0>(intersect) && recur_depth == 0) {
+                    colour += background_colour;
+                    d_val = 0;
+                    recur_depth = 10;
+
+                } else {
+                    recur_depth = 10;
+                    
+                    
+                }
+            }
+
+            pix_num++;
+        }
+    }
+}
+
+
+cv::Mat Renderer::render_depth() {
+
+    cv::Mat depth_image;
+    render_depth(depth_image);
+    return depth_image;
+}
+
+void Renderer::render_depth(cv::Mat& depth) {
+
+    std::pair<int,int> image_dims = camera.image_dim();
+    depth = cv::Mat::zeros(image_dims.first,image_dims.second,CV_32F);
+
+    std::vector<Ray> rays = camera.pixels_to_ray();
+    int pix_num = 0;
+
+    for (int i = 0; i< image_dims.second; i++) {
+        for (int j = 0; j < image_dims.first; j++) {
+            
+            Ray curr_ray = rays[pix_num];
+            int recur_depth = 0;
+            
+            
+            float& d_val = depth.at<float>(j,i);
+
+                
+                std::tuple<bool,SceneObject,double> intersect = curr_ray.intersection(objects);
+
+                if (std::get<0>(intersect)) {
+                    
+                    Point point_of_intersect = curr_ray.sample(std::get<2>(intersect));
+
+                    
+                    d_val = (point_of_intersect-curr_ray.get_origin()).norm();
+                     
+    
+                } else {
+                    d_val = 0;
+                }
+
+            pix_num++;
+        }
+    }
+
+}
 
 
 double Renderer::blinn_phong(const SceneObject& object, const Point& intersection, const Light& light, const Ray& ray) {

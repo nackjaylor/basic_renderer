@@ -94,7 +94,7 @@ SimImage CameraSimulator::random_observation_radius(const double& radius) {
 
     
     SimImage sim_image;
-    sim_image.image = renderer.render();
+    renderer.render(sim_image.image,sim_image.depth);
     sim_image.position = renderer.camera.get_position();
     sim_image.pose = renderer.camera.get_rotation();
     

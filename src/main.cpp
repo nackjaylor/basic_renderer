@@ -83,6 +83,7 @@ int main(int argc, char** argv) {
     IOFormat CommaInitFmt(FullPrecision, DontAlignCols, ",", ",", "", "", "", "");
     for (SimImage im : output) {
         cv::imwrite("./dataset6/image"+std::to_string(counter)+".png",255*im.image);
+        cv::imwrite("./dataset6/depth_raw"+std::to_string(counter)+".tiff",im.depth);
         std::ofstream camera_info("./dataset6/extrins"+std::to_string(counter)+".csv");
         camera_info << im.position.format(CommaInitFmt) << "\n";
         
@@ -92,6 +93,8 @@ int main(int argc, char** argv) {
 
         counter++;
     }
+
+
 
     return 0;
 }

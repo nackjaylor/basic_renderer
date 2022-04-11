@@ -6,6 +6,7 @@ struct SimImage
 {
     
     cv::Mat image;
+    cv::Mat depth;
     Point position;
     Quat pose;
 };

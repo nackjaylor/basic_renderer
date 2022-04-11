@@ -23,6 +23,12 @@ class Renderer {
 
         cv::Mat render();
 
+        void render(cv::Mat& image);
+        void render(cv::Mat& image, cv::Mat& depth);
+
+        cv::Mat render_depth();
+        void render_depth(cv::Mat& depth);
+
         inline void add_light(const Light& light) {lights.emplace_back(light);}
 
         inline void add_object(const SceneObject& obj) {objects.emplace_back(obj);}

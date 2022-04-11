@@ -4,7 +4,7 @@ project(flatland_nerf)
 set(CMAKE_CXX_STANDARD 17)
 
 find_package(OpenCV REQUIRED)
-find_package(Eigen3 REQUIRED)
+find_package(Eigen3 3.4 REQUIRED)
 
 
 set(CMAKE_CXX_FLAGS "-O3") #needed to make Eigen go brrr (faster)

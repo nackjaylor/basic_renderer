@@ -18,8 +18,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 
 #pragma once
-
-#include "Eigen/Core"
+#include "types.h"
 
 
 class CameraCal {
@@ -33,7 +32,7 @@ class CameraCal {
         double m_p1 = 0, m_p2 = 0;
         double m_b1 = 0, m_b2 = 0;
         double m_ppx = float(m_img_w)/2, m_ppy = float(m_img_h)/2;
-        Eigen::Matrix3d m_camera_matrix = new_matrix();
+        Matrix3d m_camera_matrix = new_matrix();
 
     public:
 
@@ -114,16 +113,16 @@ class CameraCal {
         /**
          * @brief Recreate and return matrix
          * 
-         * @return Eigen::Matrix3d 3x3 camera matrix
+         * @return Matrix3d 3x3 camera matrix
          */
-        Eigen::Matrix3d new_matrix();
+        Matrix3d new_matrix();
 
         /**
          * @brief Get the Matrix object
          * 
-         * @return Eigen::Matrix3d 3x3 camera matrix
+         * @return Matrix3d 3x3 camera matrix
          */
-        Eigen::Matrix3d getMatrix() const;
+        Matrix3d getMatrix() const;
 
         inline int number_pixels() {return m_img_h*m_img_w;}
 

@@ -19,8 +19,10 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #pragma once
 
 
-#include "Eigen/Core"
-#include "Eigen/Geometry"
+#include <Eigen/Core>
+#include <Eigen/Geometry>
+
+
 
 
 #define _USE_MATH_DEFINES
@@ -39,6 +41,9 @@ using ProjectionMatrix = Matrix<double,3,4>;
 using PixelArray = Matrix<double, 2, Dynamic>;
 using PointArray = Matrix<double, 3, Dynamic>;
 using HPointArray = Matrix<double, 4, Dynamic>;
+
+using placeholders::last;
+using placeholders::all;
 
 
 
